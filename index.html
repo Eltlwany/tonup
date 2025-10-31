@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>TON HUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+<style>
+:root{--font-family:'Poppins',sans-serif;--primary:#0088cc;--accent:#36aeea;--bg1:#07101a;--bg2:#0f1720;--surface:rgba(255,255,255,0.02);--text:#eaf2f8;--muted:#9fb1c2}
+*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}body{font-family:var(--font-family);background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 100%);color:var(--text);-webkit-font-smoothing:antialiased}
+/* Splash */
+#splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 100%);transition:opacity .6s ease;}
+.logo-wrap{width:210px;height:210px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 30%, rgba(54,174,234,0.12), rgba(0,136,204,0.06)),#0e1620;box-shadow:0 10px 40px rgba(0,136,204,0.12),0 0 50px rgba(0,136,204,0.06);position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}.logo-inner{width:74%;height:74%;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 30%, rgba(0,198,255,0.14), rgba(0,114,255,0.06));box-shadow:0 8px 24px rgba(0,150,255,0.12) inset}
+.logo-inner img{width:86%;height:86%;object-fit:contain;border-radius:12%}.glow{position:absolute;inset:-10%;filter:blur(18px);opacity:.95;background:radial-gradient(circle at 50% 40%, rgba(0,198,255,0.18), rgba(0,136,204,0.06));mix-blend-mode:screen}
+#loading-text{margin-top:18px;font-weight:600;color:var(--accent);letter-spacing:.6px;display:flex;align-items:center;gap:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);opacity:0;animation:blink 1s infinite}
+.dot.d1{animation-delay:0s}.dot.d2{animation-delay:.2s}.dot.d3{animation-delay:.4s}
+@keyframes blink{0%{opacity:0}40%{opacity:1}80%{opacity:.25}100%{opacity:0}}
+
+/* App layout */
+#app{max-width:520px;margin:0 auto;padding-bottom:90px;display:none;opacity:0;transition:opacity .45s ease}
+header.profile-header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;align-items:center;gap:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
+.profile-avatar{width:96px;height:96px;border-radius:50%;overflow:hidden;border:3px solid rgba(0,136,204,0.18);box-shadow:0 8px 28px rgba(0,0,0,0.6)}
+.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-name{font-size:1.2rem;font-weight:700;color:var(--text);margin-top:6px}
+.profile-balance{margin-top:8px;padding:8px 14px;background:linear-gradient(90deg, rgba(0,136,204,0.12), rgba(54,174,234,0.06));border-radius:14px;color:var(--accent);font-weight:700}
+
+/* controls */
+.controls{display:flex;gap:12px;padding:16px;flex-wrap:wrap;justify-content:center}
+.control-btn{min-width:120px;padding:12px 14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));border:1px solid rgba(255,255,255,0.03);color:var(--text);font-weight:600;display:flex;align-items:center;gap:10px;justify-content:center;cursor:pointer;transition:transform .12s ease,box-shadow .12s}
+.control-btn i{font-size:1.1rem;color:var(--primary)}.control-btn:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.6),0 0 22px rgba(0,136,204,0.06)}
+
+/* pages/cards */
+.page{padding:14px;display:none}.page.active{display:block;animation:fadeIn .45s ease}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,0.03);margin-bottom:12px}
+
+/* banner */
+.app-banner{position:fixed;left:0;right:0;top:18px;display:flex;justify-content:center;z-index:999999;pointer-events:none}
+.app-banner .inner{pointer-events:auto;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;color:#fff;background:#0f1114;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+.app-banner.success .inner{box-shadow:0 8px 30px rgba(0,0,0,0.5),0 0 18px rgba(44,166,122,0.18)}
+.app-banner.error .inner{box-shadow:0 8px 30px rgba(0,0,0,0.5),0 0 18px rgba(229,57,53,0.18)}
+.app-banner.info .inner{box-shadow:0 8px 30px rgba(0,0,0,0.5),0 0 18px rgba(0,136,204,0.12)}
+
+/* bottom nav */
+.bottom-nav{position:fixed;left:0;right:0;bottom:12px;display:flex;gap:12px;justify-content:space-around;padding:10px;max-width:520px;margin:0 auto;z-index:900}
+.bottom-btn{flex:1;padding:10px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;color:var(--muted);font-weight:600}
+.bottom-btn.active{background:linear-gradient(90deg,var(--primary),var(--accent));color:#fff;box-shadow:0 8px 30px rgba(0,136,204,0.12)}
+@media(max-width:420px){.logo-wrap{width:160px;height:160px}.profile-avatar{width:84px;height:84px}}
+</style>
+</head>
+<body>
+<!-- SPLASH -->
+<div id="splash" aria-hidden="false">
+  <div class="logo-wrap" role="img" aria-label="app logo">
+    <div class="glow"></div>
+    <div class="logo-inner">
+      <img id="splash-logo" src=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNjQgNjQiPgogIDxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgcng9IjgiIGZpbGw9IiMwMDE4MmEiLz4KICA8ZyBmaWxsPSIjMDBjNmZmIj4KICAgIDxwYXRoIGQ9Ik05IDYgTDU1IDYgTDMyIDU0IFoiLz4KICA8L2c+Cjwvc3ZnPg==" alt="App Logo">
+    </div>
+  </div>
+  <div id="loading-text"><span>Loading</span>
+    <span class="dot d1"></span><span class="dot d2"></span><span class="dot d3"></span>
+  </div>
+</div>
+
+<!-- BANNER -->
+<div id="banner-container" class="app-banner" aria-live="polite" style="display:none"></div>
+
+<!-- APP -->
+<div id="app" aria-hidden="true">
+  <header class="profile-header">
+    <div class="profile-avatar"><img id="user-photo" src="https://via.placeholder.com/150" alt="user"></div>
+    <div class="profile-name" id="user-name">----</div>
+    <div class="profile-balance" id="user-balance">0.00000 TON</div>
+  </header>
+
+  <main style="padding:14px">
+    <section class="controls" id="controls">
+      <button class="control-btn" data-page="home-page"><i class="fa-solid fa-house-chimney"></i>Home</button>
+      <button class="control-btn" data-page="tasks-page"><i class="fa-solid fa-coins"></i>Earnings</button>
+      <button class="control-btn" data-page="leaderboard-page"><i class="fa-solid fa-trophy"></i>Leaderboard</button>
+      <button class="control-btn" data-page="profile-page"><i class="fa-solid fa-wallet"></i>Withdraw</button>
+    </section>
+
+    <section id="home-page" class="page active">
+      <div class="card">
+        <h3 style="margin-bottom:8px">Promo Code</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="promoInput" placeholder="Enter Promo Code" style="flex:1;padding:10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text)"/>
+          <button id="promo-btn" class="control-btn" style="min-width:96px">Claim</button>
+        </div>
+        <p id="promoMessage" style="margin-top:10px;color:var(--muted);display:none"></p>
+      </div>
+
+      <div class="card" id="stats-card">
+        <div style="display:flex;justify-content:space-between;gap:12px">
+          <div><small style="color:var(--muted)">TODAY ADS</small><div id="daily-ads-watched" style="font-weight:700;color:var(--primary)">0 / 0</div></div>
+          <div><small style="color:var(--muted)">TOTAL ADS</small><div id="total-ads-watched" style="font-weight:700;color:var(--primary)">0</div></div>
+          <div><small style="color:var(--muted)">REFERRALS</small><div id="referral-count" style="font-weight:700;color:var(--primary)">0</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tasks-page" class="page">
+      <div class="card">
+        <h3>Watch ADS</h3>
+        <div id="ad-task-container"></div>
+      </div>
+    </section>
+
+    <section id="leaderboard-page" class="page">
+      <div class="card"><h3>Leaderboard</h3><ul id="leaderboard-list" style="margin-top:10px"></ul></div>
+    </section>
+
+    <section id="profile-page" class="page">
+      <div class="card">
+        <h3>Withdraw</h3>
+        <div id="withdraw-section"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="bottom-nav">
+  <div class="bottom-btn active" data-page="home-page"><i class="fa-solid fa-house-chimney"></i><small>Home</small></div>
+  <div class="bottom-btn" data-page="tasks-page"><i class="fa-solid fa-coins"></i><small>Earn</small></div>
+  <div class="bottom-btn" data-page="leaderboard-page"><i class="fa-solid fa-trophy"></i><small>Top</small></div>
+  <div class="bottom-btn" data-page="profile-page"><i class="fa-solid fa-user"></i><small>Profile</small></div>
+</nav>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+const APP_KEY = "TGAPP_fW9AqB7v42KpD8Q0x7nC3Zt9";
+const SPLASH_DURATION = 5000;
+
+function showBanner(message, type="info", autoHide=3500){
+  const container = document.getElementById("banner-container");
+  container.innerHTML = "";
+  const wrapper = document.createElement("div");
+  wrapper.className = "inner";
+  const icon = document.createElement("span");
+  icon.innerHTML = (type==="success")?'<svg viewBox="0 0 24 24" fill="#2ca67a" xmlns="http://www.w3.org/2000/svg"><path d="M9 16.17 4.12 11.29l-1.41 1.41L9 19 21.29 6.71 19.88 5.29z"/></svg>':(type==="error")?'<svg viewBox="0 0 24 24" fill="#e53935" xmlns="http://www.w3.org/2000/svg"><path d="M18.3 5.71 12 12l6.3 6.29L19.71 20.3 13.41 14 7.12 20.29 5.71 18.88 12 12 5.71 5.71 7.12 4.3 13.41 10.59 19.71 4.29z"/></svg>':'<svg viewBox="0 0 24 24" fill="#00a6ff" xmlns="http://www.w3.org/2000/svg"><path d="M11 7h2v6h-2zM11 15h2v2h-2z"/></svg>';
+  wrapper.appendChild(icon);
+  const text = document.createElement("div"); text.style.marginLeft="8px"; text.textContent = message;
+  wrapper.appendChild(text); container.appendChild(wrapper);
+  container.style.display = "flex"; container.className = `app-banner ${type}`;
+  if(autoHide) setTimeout(()=>{container.style.display="none"}, autoHide);
+}
+
+function qs(s){return document.querySelector(s)}
+function qsa(s){return Array.from(document.querySelectorAll(s))}
+
+document.addEventListener("DOMContentLoaded", async ()=>{
+  const tg = window.Telegram?.WebApp;
+  try{ if(tg && typeof tg.ready==="function") tg.ready(); }catch(e){}
+  const splash = qs("#splash"), appEl = qs("#app");
+  // Fade out after SPLASH_DURATION
+  setTimeout(()=>{ splash.style.opacity=0; setTimeout(()=>{ splash.style.display="none"; appEl.style.display="block"; setTimeout(()=>appEl.style.opacity=1,40); },600); }, SPLASH_DURATION);
+
+  // Initialize Firebase and check appKey
+  const firebaseConfig = {
+    "apiKey": "AIzaSyAFBsqYvPsQAPrnWvBfIIn0xKbQD8eFfFY",
+    "authDomain": "ton-up-422b5.firebaseapp.com",
+    "projectId": "ton-up-422b5",
+    "storageBucket": "ton-up-422b5.firebasestorage.app",
+    "messagingSenderId": "1097862104173",
+    "appId": "1:1097862104173:web:752c30106f7e9fc553ab64",
+    "measurementId": "G-R5YGH5QY0W"
+  };
+  try{
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const snap = await db.ref("appKey").once("value");
+    const remote = snap.val();
+    if(remote && remote===APP_KEY) showBanner("✅ قاعدة البيانات تعمل بشكل طبيعي","success",3000);
+    else showBanner("🔒 القواعد الأمنية تمنع الوصول (محمي بالكامل)","error",5000);
+  }catch(err){
+    console.error("Firebase init failed",err);
+    showBanner("⚠️ فشل الاتصال بقاعدة البيانات","error",4000);
+  }
+
+  // Telegram user -> profile
+  try{
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || null;
+    if(tgUser){
+      qs("#user-photo").src = tgUser.photo_url || "https://via.placeholder.com/150";
+      qs("#user-name").textContent = tgUser.username ? ("@" + tgUser.username) : (tgUser.first_name || "User");
+      // Optionally set splash logo to tg photo if available (keeps your embedded logo otherwise)
+      if(tgUser.photo_url){
+        const splashLogo = qs("#splash-logo");
+        if(splashLogo) splashLogo.src = tgUser.photo_url;
+      }
+    }
+  }catch(e){console.warn(e)}
+
+  // Navigation
+  function showPage(id){
+    qsa(".page").forEach(p=>p.classList.remove("active"));
+    const el = qs("#"+id); if(el) el.classList.add("active");
+    qsa(".bottom-btn").forEach(b=>b.classList.remove("active"));
+    qsa(".control-btn").forEach(b=>b.classList.remove("active"));
+    qsa(`.bottom-btn[data-page='${id}']`).forEach(b=>b.classList.add("active"));
+    qsa(`.control-btn[data-page='${id}']`).forEach(b=>b.classList.add("active"));
+  }
+  qsa(".control-btn").forEach(btn=>btn.addEventListener("click", ()=>showPage(btn.dataset.page)));
+  qsa(".bottom-btn").forEach(btn=>btn.addEventListener("click", ()=>showPage(btn.dataset.page)));
+
+  // Promo
+  const promoCodes = { "TONHUB1":0.001,"TONHUB2":0.0005,"TONHUB3":0.0005 };
+  qs("#promo-btn").addEventListener("click", async ()=>{
+    const code = qs("#promoInput").value.trim().toUpperCase();
+    if(!code){ showBanner("Please enter a promo code","error"); return; }
+    if(!promoCodes[code]){ showBanner("Invalid promo code","error"); return; }
+    try{
+      const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+      const db = firebase.database();
+      const usedRef = db.ref(`usedPromoCodes/${tgUser.id}/${code}`);
+      const snapshot = await usedRef.once("value");
+      if(snapshot.exists()){ showBanner("Already Claimed","error"); return; }
+      await db.ref(`users/${tgUser.id}/balance`).set(firebase.database.ServerValue.increment(promoCodes[code]));
+      await usedRef.set(true);
+      showBanner(`${promoCodes[code]} TON Received!`,"success");
+    }catch(e){console.error(e); showBanner(" Error applying promo. Please try again.","error") }
+  });
+
+  // simple ad task placeholder
+  function renderAdTask(){
+    const container = qs("#ad-task-container");
+    container.innerHTML = `<div style="display:flex;gap:12px;align-items:center"><div style="flex:1"><small style="color:var(--muted)">Reward</small><div style="font-weight:700;color:var(--primary)">0.00000 TON</div></div><button class="control-btn" id="watch-ad">Watch AD</button></div>`;
+    qs("#watch-ad")?.addEventListener("click", ()=>showBanner("AD network not configured","info"));
+  }
+  renderAdTask();
+
+  qs("#leaderboard-list").innerHTML = `<li style="list-style:none;color:var(--muted)">No data available</li>`;
+  qs("#withdraw-section").innerHTML = `<div style="display:flex;flex-direction:column;gap:8px"><input placeholder="Wallet address" style="padding:10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text)"><input placeholder="Amount" type="number" step="any" style="padding:10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text)"><button class="control-btn">Submit Request</button></div>`;
+});
+</script>
+</body>
+</html>
